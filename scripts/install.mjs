@@ -78,7 +78,12 @@ async function ensureDatabase(accountId) {
 }
 
 async function ensureWorkersSubdomain(accountId) {
-  const current = await cloudflare(`/accounts/${accountId}/workers/subdomain`);
+  let current = null;
+  try {
+    current = await cloudflare(`/accounts/${accountId}/workers/subdomain`);
+  } catch (error) {
+    if (!String(error?.message || "").includes("(404)")) throw error;
+  }
   if (current?.subdomain) return current.subdomain;
   const candidate = `nexus-${accountId.slice(0, 8)}`.toLowerCase();
   const created = await cloudflare(`/accounts/${accountId}/workers/subdomain`, "PUT", { subdomain: candidate });
