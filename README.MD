@@ -25,6 +25,30 @@
 
 </div>
 
+## Fork origin / خاستگاه فورک
+
+**English:** This repository is forked from [Trendiify/trendify-nexus-installer](https://github.com/Trendiify/trendify-nexus-installer) and was reviewed and adapted with assistance from GPT-6 Luna.
+
+**فارسی:** این مخزن از [Trendiify/trendify-nexus-installer](https://github.com/Trendiify/trendify-nexus-installer) فورک شده و با کمک GPT-6 Luna بازبینی و برای این پروژه اصلاح شده است.
+
+## Panel version notes / یادداشت نسخه‌های پنل
+
+**Version clarification:** The original gateway implementation is in `v0.0.0`. `v1.0.0` is the first modified version of this fork; it is not the original version.
+
+**توضیح نسخه‌ها:** پیاده‌سازی اصلی گیت‌وی در `v0.0.0` است. `v1.0.0` اولین نسخهٔ تغییریافتهٔ این فورک است و نسخهٔ اصلی نیست.
+
+### v1.0.0 — Proxy-enabled gateways / گیت‌وی‌های پروکسی‌دار
+
+**English:** v1 changes the original direct-only gateway behavior: generated gateways connect through public CONNECT proxies from the public proxy list. Each gateway keeps using its preferred proxy while it is healthy; it is replaced when unavailable, when TCP RTT exceeds 800 ms, or when upload/download stays below 200 KiB/s across repeated samples.
+
+**فارسی:** v1 رفتار گیت‌وی مستقیم نسخهٔ اصلی را تغییر می‌دهد: گیت‌وی‌های ساخته‌شده از پروکسی‌های عمومی CONNECT فهرست پروکسی استفاده می‌کنند. هر گیت‌وی تا وقتی پروکسی ترجیحی سالم باشد همان را نگه می‌دارد؛ اگر پروکسی قطع شود، پینگ TCP آن از ۸۰۰ میلی‌ثانیه بالاتر برود یا سرعت آپلود/دانلود در چند نمونه زیر ۲۰۰ کیبی‌بایت‌برثانیه بماند، جایگزین می‌شود.
+
+### v2.0.0 — Direct or Non-Direct / مستقیم یا پروکسی‌دار
+
+**English:** When creating a gateway, v2 lets the panel user choose **Non-Direct** (the v1 public-proxy behavior) or **Direct** (the original `v0.0.0/worker.js` behavior, with no public proxy). The selected gateway type is saved and shown in the panel. v1 creates proxy-enabled gateways; v2 supports both types.
+
+**فارسی:** در v2، هنگام ساخت گیت‌وی کاربر پنل می‌تواند **Non-Direct** (رفتار پروکسی‌دار v1) یا **Direct** (رفتار اصلی `v0.0.0/worker.js`، بدون پروکسی عمومی) را انتخاب کند. نوع انتخاب‌شده ذخیره و در پنل نمایش داده می‌شود. v1 گیت‌وی پروکسی‌دار می‌سازد و v2 هر دو نوع را پشتیبانی می‌کند.
+
 ---
 
 <a id="-english"></a>
