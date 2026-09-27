@@ -1084,6 +1084,10 @@ async function startInstallation(){
   }
 
 
+  const selectedVersion =
+    document.getElementById("panelVersion").value;
+
+
   const button =
     document.getElementById(
       "installBtn"
@@ -1182,9 +1186,19 @@ async function startInstallation(){
           token:
             cloudflareToken,
           version:
-            document.getElementById("panelVersion").value
+            selectedVersion
         }
       );
+
+
+    if(
+      selectedVersion === "v2.0.0" &&
+      result.version !== selectedVersion
+    ){
+      throw new Error(
+        "The installer backend does not support version 2.0.0 yet. Please update the installer Worker and try again."
+      );
+    }
 
 
     /*
