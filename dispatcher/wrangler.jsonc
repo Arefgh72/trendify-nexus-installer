@@ -1,0 +1,15 @@
+{
+  "$schema": "https://developers.cloudflare.com/workers/wrangler/config-schema.json",
+  "name": "trendify-nexus-installer-dispatcher",
+  "main": "index.js",
+  "compatibility_date": "2026-09-27",
+  "workers_dev": true,
+  "observability": { "enabled": true },
+  "vars": {
+    "ALLOWED_ORIGIN": "https://arefgh72.github.io"
+  },
+  "kv_namespaces": [
+    { "binding": "JOBS", "id": "SET_AFTER_CREATING_KV_NAMESPACE" }
+  ]
+}
+
