@@ -13,9 +13,8 @@ Before publishing the new installer flow:
    - `trendify-nexus-private`: Contents **read**.
 2. Add that token to the public installer repository as Actions secret `NEXUS_PRIVATE_SOURCE_TOKEN`.
 3. Set the same token as the dispatcher Worker's `GITHUB_TOKEN` secret.
-4. Create a Workers KV namespace, bind it as `JOBS`, and deploy `dispatcher/index.js` using `dispatcher/wrangler.jsonc`.
-5. Set the Actions variable `INSTALLER_DISPATCHER_URL` to the dispatcher's Worker URL, and replace `__INSTALLER_DISPATCHER_URL__` in `index.html` with the same URL.
-6. Publish this repository through GitHub Pages.
+4. Create a Workers KV namespace and bind it as `JOBS`, then deploy `dispatcher/index.js` using `dispatcher/wrangler.jsonc`. The KV ID and public URL are already configured for this dispatcher.
+5. Merge and publish the installer branch through GitHub Pages.
 
 Detailed setup and behavior: [INSTALLER-SETUP.md](INSTALLER-SETUP.md).
 
