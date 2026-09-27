@@ -189,6 +189,28 @@ input{
   transition:.2s;
 }
 
+select.version-select{
+  width:100%;
+  background:#080e19;
+  color:white;
+  border:1px solid var(--border);
+  outline:none;
+  border-radius:14px;
+  padding:15px 16px;
+  font-size:14px;
+  transition:.2s;
+}
+
+select.version-select:focus{
+  border-color:rgba(216,179,106,.7);
+  box-shadow:0 0 0 3px rgba(216,179,106,.08);
+}
+
+select.version-select option{
+  background:#080e19;
+  color:white;
+}
+
 input:focus{
   border-color:
     rgba(216,179,106,.7);
@@ -555,7 +577,17 @@ button:disabled{
     </div>
 
 
+    <label for="panelVersion" class="version-label">
+      Panel Version
+    </label>
+
+    <select id="panelVersion" class="version-select">
+      <option value="v1.0.0" selected>Version 1.0.0</option>
+      <option value="v2.0.0">Version 2.0.0</option>
+    </select>
+
     <div class="token-help">
+      Select which panel version to deploy.
 
       The token is used only during installation
       and is not saved by this installer.
@@ -1148,7 +1180,9 @@ async function startInstallation(){
         "/install",
         {
           token:
-            cloudflareToken
+            cloudflareToken,
+          version:
+            document.getElementById("panelVersion").value
         }
       );
 
