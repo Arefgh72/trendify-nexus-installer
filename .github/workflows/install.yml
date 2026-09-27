@@ -23,6 +23,11 @@ jobs:
       - name: Checkout installer
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Checkout private panel source
         uses: actions/checkout@v4
         with:
@@ -31,11 +36,6 @@ jobs:
           token: ${{ secrets.NEXUS_PRIVATE_SOURCE_TOKEN }}
           path: private-source
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
       - name: Provision Cloudflare resources and deploy Nexus
         env:
           INSTALLER_DISPATCHER_URL: https://trendify-nexus-installer-dispatcher.awdwfrr.workers.dev
@@ -43,4 +43,12 @@ jobs:
           PRIVATE_WORKER_SOURCE: private-source/src/main.js
           JOB_ID: ${{ inputs.job_id }}
         run: node scripts/install.mjs
+
+      - name: Report workflow failure
+        if: failure()
+        env:
+          INSTALLER_DISPATCHER_URL: https://trendify-nexus-installer-dispatcher.awdwfrr.workers.dev
+          NEXUS_PRIVATE_SOURCE_TOKEN: ${{ secrets.NEXUS_PRIVATE_SOURCE_TOKEN }}
+          JOB_ID: ${{ inputs.job_id }}
+        run: node scripts/report-failure.mjs
 
