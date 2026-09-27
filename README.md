@@ -4,9 +4,13 @@
 
 This repository is forked from [Trendiify/trendify-nexus-installer](https://github.com/Trendiify/trendify-nexus-installer). It has been reviewed and adapted with assistance from GPT-6 Luna for the Arefgh72 Trendify Nexus releases. The installer now targets this project's Installer API and supports selecting a version whose panel source is kept in the private versioned source repository.
 
+**Install this fork:** [Trendify Nexus Installer](https://arefgh72.github.io/trendify-nexus-installer/)
+
 ## فارسی
 
 این مخزن از [Trendiify/trendify-nexus-installer](https://github.com/Trendiify/trendify-nexus-installer) فورک شده است. با کمک GPT-6 Luna بازبینی و برای نسخه‌های پروژهٔ Trendify Nexus متعلق به Arefgh72 اصلاح شده است. نصب‌کننده به API نصب اختصاصی این پروژه وصل می‌شود و امکان انتخاب نسخه‌ای را دارد که کد پنل آن در مخزن خصوصی و نسخه‌بندی‌شده نگهداری می‌شود.
+
+نصب این فورک: [صفحهٔ نصب Trendify Nexus](https://arefgh72.github.io/trendify-nexus-installer/)
 
 ## Version notes / یادداشت‌های نسخه
 
