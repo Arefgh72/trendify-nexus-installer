@@ -1,0 +1,46 @@
+name: Install Trendify Nexus
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_id:
+        description: Short-lived installer job identifier
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nexus-install-${{ inputs.job_id }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout installer
+        uses: actions/checkout@v4
+
+      - name: Checkout private panel source
+        uses: actions/checkout@v4
+        with:
+          repository: Arefgh72/trendify-nexus-private
+          ref: main
+          token: ${{ secrets.NEXUS_PRIVATE_SOURCE_TOKEN }}
+          path: private-source
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Provision Cloudflare resources and deploy Nexus
+        env:
+          INSTALLER_DISPATCHER_URL: ${{ vars.INSTALLER_DISPATCHER_URL }}
+          NEXUS_PRIVATE_SOURCE_TOKEN: ${{ secrets.NEXUS_PRIVATE_SOURCE_TOKEN }}
+          PRIVATE_WORKER_SOURCE: private-source/src/main.js
+          JOB_ID: ${{ inputs.job_id }}
+        run: node scripts/install.mjs
+
