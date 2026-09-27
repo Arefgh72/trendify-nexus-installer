@@ -38,7 +38,7 @@ jobs:
 
       - name: Provision Cloudflare resources and deploy Nexus
         env:
-          INSTALLER_DISPATCHER_URL: ${{ vars.INSTALLER_DISPATCHER_URL }}
+          INSTALLER_DISPATCHER_URL: https://trendify-nexus-installer-dispatcher.awdwfrr.workers.dev
           NEXUS_PRIVATE_SOURCE_TOKEN: ${{ secrets.NEXUS_PRIVATE_SOURCE_TOKEN }}
           PRIVATE_WORKER_SOURCE: private-source/src/main.js
           JOB_ID: ${{ inputs.job_id }}
