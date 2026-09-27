@@ -6,14 +6,14 @@ The panel source and gateway source remain in the private repository. The public
 
 ## One-time setup
 
-1. Create a fine-grained GitHub token limited to these repositories and permissions:
+1. Create a fine-grained GitHub token restricted to these repositories and permissions:
    - `Arefgh72/trendify-nexus-installer`: Actions **write**.
    - `Arefgh72/trendify-nexus-private`: Contents **read**.
 2. Add that token as the public installer repository Actions secret `NEXUS_PRIVATE_SOURCE_TOKEN`.
 3. Set the same token as the dispatcher Worker's `GITHUB_TOKEN` secret. The dispatcher needs it to dispatch the workflow and authenticate the Worker's one-time claim/progress calls.
-4. Set the repository Actions variable `INSTALLER_DISPATCHER_URL` to the dispatcher's `https://…workers.dev` URL and set the same URL in `index.html`.
-5. Create a Workers KV namespace and bind it as `JOBS` in `dispatcher/wrangler.jsonc`. Deploy `dispatcher/index.js`; keep `GITHUB_TOKEN` out of source control.
-6. Enable GitHub Pages for the public installer repository from `main` (or the published installer branch after review).
+4. Create a Workers KV namespace and bind it as `JOBS` in `dispatcher/wrangler.jsonc`. The namespace ID and binding are already set for this deployment.
+5. Deploy `dispatcher/index.js` with `dispatcher/wrangler.jsonc`. The deployed URL is `https://trendify-nexus-installer-dispatcher.awdwfrr.workers.dev`; the Pages form and workflow already point to it.
+6. Enable GitHub Pages for the public installer repository after the workflow changes are merged.
 
 The Cloudflare token is not placed in workflow-dispatch inputs or GitHub logs. It is encrypted at rest in KV, expires automatically, and is deleted when the runner claims it. The deployed panel needs the token later to create Gateway Workers, so the installer stores it as the panel Worker secret `CF_TOKEN`; it also stores the account ID as `CF_ACCOUNT_ID`.
 
@@ -22,4 +22,3 @@ The installer selects the first account accessible to the supplied token. A new 
 ## Cloudflare API token permissions
 
 The user token needs Account Settings **Read**, D1 **Edit**, and Workers Scripts **Edit** for the selected account.
-
