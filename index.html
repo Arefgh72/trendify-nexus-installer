@@ -557,8 +557,7 @@ button:disabled{
 
     <div class="token-help">
 
-      The token is used only during installation
-      and is not saved by this installer.
+      The token is encrypted during deployment, then stored as a Worker secret because the panel needs it to create Gateway Workers. It is never written to the workflow inputs or logs.
 
     </div>
 
@@ -759,6 +758,8 @@ button:disabled{
       id="errorBox"
       class="error-box hidden"
     ></div>
+
+    <button id="retryBtn" class="hidden" onclick="returnToSetup()">Try again</button>
 
   </div>
 
