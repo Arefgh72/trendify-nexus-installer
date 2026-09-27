@@ -9,7 +9,7 @@
     "ALLOWED_ORIGIN": "https://arefgh72.github.io"
   },
   "kv_namespaces": [
-    { "binding": "JOBS", "id": "SET_AFTER_CREATING_KV_NAMESPACE" }
+    { "binding": "JOBS", "id": "8b13aeec496f4643b4c938496c0452c1" }
   ]
 }
 
