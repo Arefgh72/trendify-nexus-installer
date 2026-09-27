@@ -65,10 +65,8 @@ async function cloudflare(path, method = "GET", body = undefined) {
 }
 
 async function setWorkerSecret(accountId, name, text) {
-  await cloudflare(`/accounts/${accountId}/workers/scripts/${workerName}/secrets`, "PUT", {
-    name,
-    type: "secret_text",
-    text
+  await cloudflare(`/accounts/${accountId}/workers/scripts/${workerName}/secrets-bulk`, "PATCH", {
+    secrets: { [name]: { name, type: "secret_text", text } }
   });
 }
 
