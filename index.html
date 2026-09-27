@@ -828,491 +828,145 @@ button:disabled{
 
 
 <script>
-
-/* =========================================================
-   CONFIG
-========================================================= */
-
-const INSTALLER_API =
-  "https://trendify-installer-api.barcelona-campp.workers.dev";
-
-
-/* =========================================================
-   STATE
-========================================================= */
-
-let cloudflareToken = "";
-
+const INSTALLER_API = "__INSTALLER_DISPATCHER_URL__";
 let panelUrl = "";
 
-
-/* =========================================================
-   VIEW
-========================================================= */
-
-function showView(id){
-
-  document
-    .getElementById("setupView")
-    .classList.add("hidden");
-
-  document
-    .getElementById("installView")
-    .classList.add("hidden");
-
-  document
-    .getElementById("completeView")
-    .classList.add("hidden");
-
-
-  document
-    .getElementById(id)
-    .classList.remove("hidden");
+function showView(id) {
+  ["setupView", "installView", "completeView"].forEach(function(view) {
+    document.getElementById(view).classList.toggle("hidden", view !== id);
+  });
 }
 
-
-/* =========================================================
-   STEP UI
-========================================================= */
-
-function setStep(
-  number,
-  state,
-  text
-){
-
-  const item =
-    document.getElementById(
-      "item" + number
-    );
-
-
-  if(!item){
-    return;
-  }
-
-
-  item.classList.remove(
-    "active",
-    "done",
-    "error"
-  );
-
-
-  if(state){
-    item.classList.add(state);
-  }
-
-
-  const status =
-    item.querySelector(
-      ".install-status"
-    );
-
-
-  if(status){
-    status.textContent =
-      text;
-  }
-
-
-  const icon =
-    item.querySelector(
-      ".install-icon"
-    );
-
-
-  if(
-    icon &&
-    state === "done"
-  ){
-
-    icon.textContent =
-      "✓";
-  }
-
-
-  if(
-    icon &&
-    state === "error"
-  ){
-
-    icon.textContent =
-      "!";
-  }
+function setStep(number, state, text) {
+  const item = document.getElementById("item" + number);
+  if (!item) return;
+  item.classList.remove("active", "done", "error");
+  if (state) item.classList.add(state);
+  const status = item.querySelector(".install-status");
+  if (status) status.textContent = text || "Waiting";
+  const icon = item.querySelector(".install-icon");
+  if (icon && state === "done") icon.textContent = "✓";
+  if (icon && state === "error") icon.textContent = "!";
 }
 
-
-/* =========================================================
-   ERROR
-========================================================= */
-
-function showError(error){
-
-  const box =
-    document.getElementById(
-      "errorBox"
-    );
-
-
-  box.textContent =
-    error?.message ||
-    String(error);
-
-
-  box.classList.remove(
-    "hidden"
-  );
+function showError(message) {
+  const box = document.getElementById("errorBox");
+  box.textContent = message || "Installation failed.";
+  box.classList.remove("hidden");
+  document.getElementById("retryBtn").classList.remove("hidden");
 }
 
+function returnToSetup() {
+  document.getElementById("errorBox").classList.add("hidden");
+  document.getElementById("retryBtn").classList.add("hidden");
+  showView("setupView");
+}
 
-/* =========================================================
-   INSTALLER API
-========================================================= */
-
-async function installerRequest(
-  path,
-  body
-){
-
-  const response =
-    await fetch(
-      INSTALLER_API + path,
-      {
-        method:"POST",
-
-        headers:{
-          "Content-Type":
-            "application/json"
-        },
-
-        body:
-          JSON.stringify(body)
-      }
-    );
-
-
+async function installerRequest(path, options) {
+  const response = await fetch(INSTALLER_API + path, options || { method: "GET" });
   let data;
-
-
-  try{
-
-    data =
-      await response.json();
-
-  }catch{
-
-    throw new Error(
-      "Installer API returned an invalid response."
-    );
-
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error("Installer service returned an invalid response.");
   }
-
-
-  if(
-    !response.ok ||
-    data.success === false
-  ){
-
-    throw new Error(
-      data.error ||
-      "Installer API request failed."
-    );
-
+  if (!response.ok || data.success === false) {
+    throw new Error(data.error || "Installer request failed.");
   }
-
-
   return data;
 }
 
+const stageSteps = {
+  validating_token: 1,
+  detecting_account: 2,
+  creating_database: 3,
+  deploying_worker: 4,
+  setting_secrets: 5,
+  initializing_database: 5,
+  enabling_workers_dev: 6,
+  complete: 6,
+  failed: 1
+};
 
-/* =========================================================
-   INSTALLATION
-========================================================= */
+function renderProgress(job) {
+  const current = stageSteps[job.stage] || 1;
+  for (let i = 1; i <= 6; i++) {
+    if (job.state === "complete") {
+      setStep(i, "done", ["Token verified", "Cloudflare account found", "D1 database ready", "Panel Worker deployed", "Worker secrets configured", "workers.dev enabled"][i - 1]);
+    } else if (job.state === "failed") {
+      if (i < current) setStep(i, "done", "Complete");
+      else if (i === current) setStep(i, "error", "Installation failed");
+      else setStep(i, null, "Waiting");
+    } else if (i < current) {
+      setStep(i, "done", "Complete");
+    } else if (i === current) {
+      setStep(i, "active", job.message || "In progress");
+    } else {
+      setStep(i, null, "Waiting");
+    }
+  }
+}
 
-async function startInstallation(){
+async function waitForInstallation(id) {
+  const deadline = Date.now() + 20 * 60 * 1000;
+  while (Date.now() < deadline) {
+    const job = await installerRequest("/api/status?job_id=" + encodeURIComponent(id));
+    renderProgress(job);
+    if (job.state === "complete") {
+      panelUrl = job.panel_url || "";
+      if (!panelUrl) throw new Error("The panel was deployed, but its URL was not returned.");
+      document.getElementById("panelUrl").textContent = panelUrl;
+      showView("completeView");
+      return;
+    }
+    if (job.state === "failed") throw new Error(job.message || "Installation failed.");
+    await new Promise(function(resolve) { setTimeout(resolve, 2500); });
+  }
+  throw new Error("Installation is taking longer than expected. You can try again.");
+}
 
-  const tokenInput =
-    document.getElementById(
-      "token"
-    );
-
-
-  cloudflareToken =
-    tokenInput.value.trim();
-
-
-  if(!cloudflareToken){
-
-    alert(
-      "Please enter your Cloudflare API Token."
-    );
-
+async function startInstallation() {
+  const tokenInput = document.getElementById("token");
+  const token = tokenInput.value.trim();
+  if (!token) {
+    alert("Please enter your Cloudflare API Token.");
+    return;
+  }
+  if (!INSTALLER_API || INSTALLER_API.indexOf("https://") !== 0 || INSTALLER_API.includes("__INSTALLER_")) {
+    alert("The installer service has not been configured yet.");
     return;
   }
 
+  const button = document.getElementById("installBtn");
+  button.disabled = true;
+  document.getElementById("errorBox").classList.add("hidden");
+  document.getElementById("retryBtn").classList.add("hidden");
+  for (let i = 1; i <= 6; i++) setStep(i, null, "Waiting");
+  showView("installView");
 
-  const button =
-    document.getElementById(
-      "installBtn"
-    );
-
-
-  button.disabled =
-    true;
-
-
-  document
-    .getElementById(
-      "errorBox"
-    )
-    .classList
-    .add("hidden");
-
-
-  showView(
-    "installView"
-  );
-
-
-  try{
-
-    /*
-      The actual installation is performed
-      by the Installer API Worker.
-
-      The browser never calls
-      api.cloudflare.com directly.
-    */
-
-
-    setStep(
-      1,
-      "active",
-      "Verifying Cloudflare token..."
-    );
-
-
-    setStep(
-      2,
-      "active",
-      "Detecting Cloudflare account..."
-    );
-
-
-    setStep(
-      3,
-      "active",
-      "Creating Nexus database..."
-    );
-
-
-    setStep(
-      4,
-      "active",
-      "Deploying Nexus Worker..."
-    );
-
-
-    setStep(
-      5,
-      "active",
-      "Connecting D1 database..."
-    );
-
-
-    setStep(
-      6,
-      "active",
-      "Enabling workers.dev..."
-    );
-
-
-    /*
-      ONE request.
-
-      The Installer Worker performs:
-
-      1. Token verification
-      2. Account detection
-      3. D1 creation
-      4. D1 initialization
-      5. workers.dev setup
-      6. Nexus Worker deployment
-      7. D1 binding
-      8. workers.dev activation
-    */
-
-    const result =
-      await installerRequest(
-        "/install",
-        {
-          token:
-            cloudflareToken
-        }
-      );
-
-
-    /*
-      Installation succeeded.
-    */
-
-
-    setStep(
-      1,
-      "done",
-      "Token verified"
-    );
-
-
-    setStep(
-      2,
-      "done",
-      result.account?.name ||
-      "Cloudflare account detected"
-    );
-
-
-    setStep(
-      3,
-      "done",
-      "D1 database ready"
-    );
-
-
-    setStep(
-      4,
-      "done",
-      "Nexus Worker deployed"
-    );
-
-
-    setStep(
-      5,
-      "done",
-      "Database connected"
-    );
-
-
-    setStep(
-      6,
-      "done",
-      "workers.dev enabled"
-    );
-
-
-    panelUrl =
-      result.worker?.url;
-
-
-    if(!panelUrl){
-
-      throw new Error(
-        "Installation completed but the Nexus Worker URL was not returned."
-      );
-    }
-
-
-    document
-      .getElementById(
-        "panelUrl"
-      )
-      .textContent =
-      panelUrl;
-
-
-    showView(
-      "completeView"
-    );
-
-
-    /*
-      Clear token from browser memory
-      after installation.
-    */
-
-    cloudflareToken = "";
-
+  try {
+    setStep(1, "active", "Sending token for secure validation...");
+    const accepted = await installerRequest("/api/install", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: token })
+    });
     tokenInput.value = "";
-
-
-  }catch(error){
-
-    console.error(
-      "Installation failed:",
-      error
-    );
-
-
-    /*
-      Find active step
-      and mark it as failed.
-    */
-
-    for(
-      let i = 1;
-      i <= 6;
-      i++
-    ){
-
-      const item =
-        document.getElementById(
-          "item" + i
-        );
-
-
-      if(
-        item &&
-        item.classList.contains(
-          "active"
-        )
-      ){
-
-        setStep(
-          i,
-          "error",
-          "Installation failed"
-        );
-
-        break;
-      }
-
-    }
-
-
-    showError(
-      error
-    );
-
-
-  }finally{
-
-    button.disabled =
-      false;
+    if (!accepted.job_id) throw new Error("The installer did not return a job identifier.");
+    await waitForInstallation(accepted.job_id);
+  } catch (error) {
+    showError(error && error.message ? error.message : String(error));
+  } finally {
+    tokenInput.value = "";
+    button.disabled = false;
   }
-
 }
 
-
-/* =========================================================
-   OPEN DASHBOARD
-========================================================= */
-
-function openDashboard(){
-
-  if(!panelUrl){
-    return;
-  }
-
-
-  window.open(
-    panelUrl,
-    "_blank",
-    "noopener,noreferrer"
-  );
+function openDashboard() {
+  if (panelUrl) window.open(panelUrl, "_blank", "noopener,noreferrer");
 }
-
 </script>
+
 
 </body>
 </html>
